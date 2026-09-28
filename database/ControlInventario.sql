@@ -1,4 +1,4 @@
-/* =========================================================================
+﻿/* =========================================================================
    ControlInventario - Script de base de datos
    Motor: Microsoft SQL Server (2019 o superior)
    Nombre de la base de datos: controlinventario
@@ -251,12 +251,12 @@ SET IDENTITY_INSERT dbo.Roles OFF;
 GO
 
 /* --- 14.2 Usuario administrador por defecto (contraseña: Admin123*) --- */
-/* Hash generado con ASP.NET Core Identity V3 (PBKDF2-HMAC-SHA256, 100000 iteraciones) */
+/* Hash generado con ASP.NET Core Identity V3 (PBKDF2-HMAC-SHA512, 100000 iteraciones) */
 IF NOT EXISTS (SELECT 1 FROM dbo.Usuarios WHERE NombreUsuario = N'admin')
 BEGIN
     INSERT INTO dbo.Usuarios (NombreUsuario, NombreCompleto, Correo, ContrasenaHash, IdRol, Activo)
     VALUES (N'admin', N'Administrador General', N'admin@controlinventario.local',
-            N'AQAAAAEAAYagAAAAEF42qHpE1PPbGi9BaiYk4FPnCdNfpplhojU7BE1nABWcoYeDcjZIIEwTOslZUaGWoA==',
+            N'AQAAAAIAAYagAAAAEDyna07dG+aQrOcrFhvXLRHqHea7Lm2hN8pMdsA1gsnKagwVg60Xhg4oO9e2psD7Mw==',
             1, 1);
 END
 GO
