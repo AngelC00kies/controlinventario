@@ -1,4 +1,4 @@
-/* =========================================================================
+﻿/* =========================================================================
    ControlInventario - Script de base de datos
    Motor: Microsoft SQL Server (2019 o superior)
    Nombre de la base de datos: controlinventario
