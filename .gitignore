@@ -45,3 +45,6 @@ Thumbs.db
 Desktop.ini
 *.log
 *.bak
+
+# Caché de Vite
+.vite/
