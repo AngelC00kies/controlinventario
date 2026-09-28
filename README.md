@@ -51,28 +51,47 @@ controlinventario/
 
 ## Instrucciones para correr la aplicación
 
+El orden recomendado es: **base de datos → backend → frontend**.
+
 ### 1. Base de datos
 
-Abrir **SQL Server Management Studio** (o `sqlcmd`) y ejecutar el script:
+El script `database/ControlInventario.sql` crea la base de datos **`controlinventario`**, las 9 tablas con nombres y columnas en español, la vista `V_ProductosStockCritico` y los datos de inicio:
 
-```text
-database/ControlInventario.sql
+- 3 roles (Administrador, Usuario, Auditor) y el usuario `admin`.
+- 2 almacenes, 4 categorías, 3 proveedores y 6 productos con su stock.
+- 3 movimientos de ejemplo.
+
+**Opción A — SQL Server Management Studio (recomendada):** abrir SSMS y ejecutar el script completo.
+
+**Opción B — `sqlcmd` (importante):** el script está codificado en **UTF-8 con BOM** para conservar los acentos. Ejecutarlo con:
+
+```bash
+sqlcmd -S localhost -E -i database/ControlInventario.sql -f 65001
 ```
 
-El script crea la base de datos `controlinventario`, todas las tablas en español y los datos de inicio (roles, usuario administrador, almacén, categorías y proveedores de ejemplo).
+> `-f 65001` fuerza la página de códigos UTF-8; sin él, `sqlcmd` puede corromper los textos con acentos (á, é, í, ó, ú, ñ).
+
+Si SQL Server usa autenticación mixta, reemplazar `-E` por `-U sa -P <contraseña>`.
 
 ### 2. Backend (API)
 
-```bash
-cd backend
-# Ajustar la cadena de conexión en src/ControlInventario.API/appsettings.json
-dotnet restore
-dotnet run --project src/ControlInventario.API
+Revisar la cadena de conexión en `backend/src/ControlInventario.API/appsettings.json`:
+
+```json
+"ConexionPredeterminada": "Server=localhost;Database=controlinventario;Trusted_Connection=True;TrustServerCertificate=True"
 ```
 
-La API quedará disponible en `https://localhost:7xxx/` (puerto indicado al iniciar).
+Luego compilar y ejecutar:
 
-**Pruebas unitarias:**
+```bash
+cd backend
+dotnet restore
+dotnet run --project src/ControlInventario.API --launch-profile http
+```
+
+La API quedará disponible en **`http://localhost:5087`** y la documentación Swagger en `http://localhost:5087/swagger`.
+
+**Pruebas unitarias** (39 pruebas):
 
 ```bash
 dotnet test backend/ControlInventario.sln
@@ -86,7 +105,14 @@ npm install
 npm run dev
 ```
 
-El frontend quedará disponible en `http://localhost:5173`.
+El frontend quedará disponible en **`http://localhost:5173`**. Vite está configurado para proxyar las llamadas `/api/*` hacia `http://localhost:5087`, por lo que **el backend debe estar ejecutándose** antes de iniciar sesión.
+
+Verificación rápida de la aplicación en ejecución:
+
+```bash
+# Build de producción (opcional)
+cd frontend && npm run build
+```
 
 ### Credenciales de inicio
 
@@ -94,7 +120,7 @@ El frontend quedará disponible en `http://localhost:5173`.
 |---|---|---|
 | `admin` | `Admin123*` | Administrador |
 
-> Cambiar la contraseña después del primer inicio de sesión.
+> Cambiar la contraseña después del primer inicio de sesión. Para probar los otros roles, crear usuarios desde la vista **Usuarios** (solo el Administrador puede hacerlo) y asignarles el rol `Usuario` o `Auditor`.
 
 ## Roles y permisos
 
@@ -103,6 +129,31 @@ El frontend quedará disponible en `http://localhost:5173`.
 | Administrador | Todo: CRUD completo, movimientos, reportes y gestión de usuarios |
 | Usuario | Consultar productos y registrar movimientos (entradas/salidas) |
 | Auditor | Solo lectura: consultas y reportes |
+
+## Pantallas principales
+
+| Pantalla | Contenido |
+|---|---|
+| Inicio de sesión | Autenticación con JWT |
+| Panel principal | KPIs (productos, valor de inventario, movimientos del mes, stock crítico), alertas y últimos movimientos |
+| Productos | Búsqueda con filtros por categoría/proveedor, CRUD, badge de estado de stock y detalle por almacén |
+| Categorías / Proveedores / Almacenes | CRUD con baja lógica e inclusión de inactivos |
+| Movimientos | Listado con filtros (producto, tipo, rango de fechas), registro de entradas/salidas con detalle de líneas y vista de detalle con documento/factura y usuario responsable |
+| Reportes | Pestañas de stock actual, movimientos y stock crítico, con filtros, exportación a CSV e impresión |
+| Usuarios | Alta/edición/baja de usuarios y asignación de roles (solo Administrador) |
+
+La interfaz se adapta al rol: los botones de alta/modificación/baja solo aparecen para el Administrador, y el registro de movimientos está disponible para Administrador y Usuario.
+
+## Verificación funcional
+
+Flujo recomendado para comprobar el sistema de punta a punta:
+
+1. Iniciar sesión con `admin` / `Admin123*`.
+2. Revisar el panel: KPIs, alertas de stock crítico y últimos movimientos.
+3. Registrar una **entrada** de producto y verificar que el stock aumenta en Productos.
+4. Registrar una **salida** mayor al stock disponible y verificar el mensaje de error.
+5. Consultar **Reportes** y exportar a CSV.
+6. Crear un usuario con rol `Auditor`, iniciar sesión con él y verificar que no aparecen botones de escritura.
 
 ## Licencia
 
