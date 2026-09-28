@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+/* =========================================================================
+   Estilos globales de ControlInventario (Tailwind CSS v4)
+   ========================================================================= */
+
+:root {
+  --color-primario: #4f46e5;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+/* Scrollbar discreta para las tablas */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 8px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Impresión de reportes: solo la tabla, sin la interfaz */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .area-imprimible,
+  .area-imprimible * {
+    visibility: visible;
+  }
+
+  .area-imprimible {
+    position: absolute;
+    inset: 0;
+    padding: 0;
+  }
+}
